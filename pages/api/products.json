@@ -1,0 +1,20 @@
+[
+    {
+      "id": 1,
+      "name": "chicken",
+      "price": "0.09",
+      "description": "Yummy chicken noodles!",
+      "image_url": "https://cloudflare-ipfs.com/ipfs/QmRhvEW6m4swzYGbnPkKioQCUe53QDhaVs1EMi99NmyjVA",
+      "filename": "chicken2.jpeg",
+      "hash": "QmRhvEW6m4swzYGbnPkKioQCUe53QDhaVs1EMi99NmyjVA"
+    },
+    {
+      "id": 2,
+      "name": "beef",
+      "price": "0.19",
+      "description": "Beef! It's what's for dinner!",
+      "image_url": "https://cloudflare-ipfs.com/ipfs/QmYdiX1RtXBkBJ6FryxUwG2oB8Q8X8o3cMCToBRwnP4j59",
+      "filename": "beef2.jpeg",
+      "hash": "QmYdiX1RtXBkBJ6FryxUwG2oB8Q8X8o3cMCToBRwnP4j59"
+    }
+  ]
