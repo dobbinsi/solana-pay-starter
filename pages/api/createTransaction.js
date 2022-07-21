@@ -19,7 +19,7 @@ import products from "./products.json";
 const sellerAddress = "43AbhctQ6fpNLQ5GCfAMtWtTTcTxHfGtRdTMLejzNb8L";
 const sellerPublicKey = new PublicKey(sellerAddress);
 const usdcAddress = new PublicKey(
-  "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr"
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 );
 
 const createTransaction = async (req, res) => {
@@ -52,7 +52,7 @@ const createTransaction = async (req, res) => {
     // Convert our price to the correct format
     const bigAmount = BigNumber(itemPrice);
     const buyerPublicKey = new PublicKey(buyer);
-    const network = WalletAdapterNetwork.Devnet;
+    const network = WalletAdapterNetwork.Mainnet;
     const endpoint = clusterApiUrl(network);
     const connection = new Connection(endpoint);
 
