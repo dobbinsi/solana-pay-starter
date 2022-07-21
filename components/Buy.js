@@ -1,16 +1,25 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Keypair, Transaction } from "@solana/web3.js";
+import { findReference, FindReferenceError } from "@solana/pay";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { InfinitySpin } from "react-loader-spinner";
 import IPFSDownload from "./IpfsDownload";
+import { addOrder, hasPurchased, fetchItem } from "../lib/api";
+
+const STATUS = {
+  Initial: "Initial",
+  Submitted: "Submitted",
+  Paid: "Paid",
+};
 
 export default function Buy({ itemID }) {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
   const orderID = useMemo(() => Keypair.generate().publicKey, []); // Public key used to identify the order
 
-  const [paid, setPaid] = useState(null);
+  const [item, setItem] = useState(null); // IPFS hash & filename of the purchased item
   const [loading, setLoading] = useState(false); // Loading state of all above
+  const [status, setStatus] = useState(STATUS.Initial); // Tracking transaction status
 
   // useMemo is a React hook that only computes the value if the dependencies change
   const order = useMemo(
@@ -45,14 +54,69 @@ export default function Buy({ itemID }) {
       console.log(
         `Transaction sent: https://solscan.io/tx/${txHash}?cluster=devnet`
       );
-      // Even though this could fail, we're just going to set it to true for now
-      setPaid(true);
+      setStatus(STATUS.Submitted);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Check if this address has already purchased this item
+    // If so, fetch the item and set paid to true
+    // Async function to avoid blocking the UI
+    async function checkPurchased() {
+      const purchased = await hasPurchased(publicKey, itemID);
+      if (purchased) {
+        setStatus(STATUS.Paid);
+        const item = await fetchItem(itemID);
+        setItem(item);
+        console.log("Wallet has already purchased this item!");
+      }
+    }
+    checkPurchased();
+  }, [publicKey, itemID]);
+
+  useEffect(() => {
+    // Check if transaction was confirmed
+    if (status === STATUS.Submitted) {
+      setLoading(true);
+      const interval = setInterval(async () => {
+        try {
+          const result = await findReference(connection, orderID);
+          console.log("Finding tx reference", result.confirmationStatus);
+          if (
+            result.confirmationStatus === "confirmed" ||
+            result.confirmationStatus === "finalized"
+          ) {
+            clearInterval(interval);
+            setStatus(STATUS.Paid);
+            setLoading(false);
+            addOrder(order);
+            alert("Enjoy your noodles!");
+          }
+        } catch (e) {
+          if (e instanceof FindReferenceError) {
+            return null;
+          }
+          console.error("Unknown error", e);
+        } finally {
+          setLoading(false);
+        }
+      }, 1000);
+      return () => {
+        clearInterval(interval);
+      };
+    }
+    async function getItem(itemID) {
+      const item = await fetchItem(itemID);
+      setItem(item);
+    }
+    if (status === STATUS.Paid) {
+      getItem(itemID);
+    }
+  }, [status]);
 
   if (!publicKey) {
     return (
@@ -68,12 +132,8 @@ export default function Buy({ itemID }) {
 
   return (
     <div>
-      {paid ? (
-        <IPFSDownload
-          filename="chicken2.jpeg"
-          hash="QmRhvEW6m4swzYGbnPkKioQCUe53QDhaVs1EMi99NmyjVA"
-          cta="Download chicken"
-        />
+      {item ? (
+        <IPFSDownload filename={item.filename} hash={item.hash} />
       ) : (
         <button
           disabled={loading}
