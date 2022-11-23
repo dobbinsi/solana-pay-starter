@@ -121,7 +121,7 @@ export default function Buy({ itemID }) {
   if (!publicKey) {
     return (
       <div>
-        <p>Connect your wallet to purchase noodles</p>
+        <p>Connect your wallet to purchase jawns</p>
       </div>
     );
   }
